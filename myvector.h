@@ -1,4 +1,6 @@
 #pragma once
+#define GROWTH_SIZE 1.5
+#define CAPACITY_MULTIPLIER 2
 
 #include <iterator>
 
@@ -51,6 +53,8 @@ namespace my {
 		T* arr;
 		sz_type size = 0;
 		sz_type capacity = 2;
+		void realloc();
+		void realloc(const sz_type&);
 	};
 
 	template <typename T>
@@ -61,38 +65,38 @@ namespace my {
 	template <typename T>
 	vector<T>::vector(const sz_type& nsize) {
 		size = nsize;
-		capacity = nsize * 2;
+		capacity = nsize * CAPACITY_MULTIPLIER;
 		for (sz_type i; i < n; ++i) {
 			arr[i] = T();
 		}
 	}
-	
+
 	template <typename T>
 	vector::vector(const sz_type& nsize, const T& nvalue) {
 		size = nsize;
-		capacity = nsize * 2;
+		capacity = nsize * CAPACITY_MULTIPLIER;
 		for (sz_type i; i < size; ++i) {
 			arr[i] = nvalue;
 		}
 	}
 
 	template <typename T>
-	vector::vector(const vector<T>& arr_copy) {
-		size = arr_copy.size;
-		capacity = arr_copy.capacity;
+	vector::vector(const vector<T>& copy) {
+		size = copy.size;
+		capacity = copy.capacity;
 		arr = new T[capacity];
 		for (sz_type i; i < size; ++i) {
-			arr[i] = arr_copy[i];
+			arr[i] = copy[i];
 		}
 	}
 
 	template <typename T>
-	vector::vector(vector<T>&& arr_copy) {
-		size = arr_copy.size;
-		capacity = arr_copy.capacity;
+	vector::vector(vector<T>&& copy) {
+		size = copy.size;
+		capacity = copy.capacity;
 		arr = new T[capacity];
 		for (sz_type i; i < size; ++i) {
-			arr[i] = arr_copy[i];
+			arr[i] = std::move(copy[i]);
 		}
 	}
 
@@ -102,8 +106,42 @@ namespace my {
 	}
 
 	template <typename T>
-	void vector::operator=(const vector<T>& arr_assign) {
-			
+	vector<T>& vector::operator=(const vector<T>& assign) {
+		if (this == &assign) return *this;
+
+		if (size = assign.size) {
+			memcpy(arr, assign.arr, assign.size*sizeof(T));
+			return *this;
+		} else if (size > assign.size) {
+			size = assign.size;
+			capacity = assign.capacity;
+			realloc();
+			memcpy(arr, assign.arr, size*sizeof(T));
+		} else {
+
+		}
+
 	}
-	void operator=(vector<T>&&);
+
+	template <typename T>
+	vector<T>& vector::operator=(vector<T>&& assign) {
+		if (this == &assign) return *this;
+
+	}
+
+	template <typename T>
+	void vector::realloc() {
+		T* new_arr = new T[capacity];
+		memcpy(new_arr, arr, size*sizeof(T));
+		delete[] arr;
+		arr = new_arr;
+	}
+
+	template <typename T>
+	void vector::realloc(const sz_type& new_capacity) {
+		T* new_arr = new T[new_capacity];
+		memcpy(new_arr, arr, size*sizeof(T));
+		delete[] arr;
+		arr = new_arr;
+	}
 }
