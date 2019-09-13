@@ -5,11 +5,12 @@
 #include <iterator>
 
 namespace my {
+    typedef unsigned int sz_type;
+    
 	template <typename T>
 	class vector {
 	public:
 		// typedefs
-		typedef unsigned int sz_type;
 		typedef T* iterator;
 		typedef const T* const_iterator;
 		typedef std::reverse_iterator<iterator> reverse_iterator;
@@ -22,11 +23,12 @@ namespace my {
 		vector(const vector<T>&);
 		vector(vector<T>&&);
 		~vector();
-		void operator=(const vector<T>&);
-		void operator=(vector<T>&&);
+		vector<T>& operator=(const vector<T>&);
+		vector<T>& operator=(vector<T>&&);
 
 		// insertions
 		void push_back(const T&);
+        void push_back(T&&);
 
 		// deletions
 		void clear();
@@ -34,7 +36,7 @@ namespace my {
 		// accessors
 		sz_type size() const;
 		sz_type capacity() const;
-		T& operator [](sz_type) const;
+		T& operator [](const sz_type&) const;
 		T& front() const;
 		T& back() const;
 
@@ -50,98 +52,156 @@ namespace my {
 		const_iterator crend() const;
 
 	private:
-		T* arr;
-		sz_type size = 0;
-		sz_type capacity = 2;
+		T* m_arr;
+		sz_type m_size = 0;
+		sz_type m_capacity = 2;
 		void realloc();
 		void realloc(const sz_type&);
 	};
 
+    // constructors/destructors and assignment operators
 	template <typename T>
 	vector<T>::vector() {
-		arr = new T[capacity];
+		m_arr = new T[m_capacity];
 	}
 
 	template <typename T>
-	vector<T>::vector(const sz_type& nsize) {
-		size = nsize;
-		capacity = nsize * CAPACITY_MULTIPLIER;
-		for (sz_type i; i < n; ++i) {
-			arr[i] = T();
-		}
-	}
-
-	template <typename T>
-	vector::vector(const sz_type& nsize, const T& nvalue) {
-		size = nsize;
-		capacity = nsize * CAPACITY_MULTIPLIER;
+	vector<T>::vector(const sz_type& size) {
+		m_size = size;
+		m_capacity = size * CAPACITY_MULTIPLIER;
 		for (sz_type i; i < size; ++i) {
-			arr[i] = nvalue;
+			m_arr[i] = T();
 		}
 	}
 
 	template <typename T>
-	vector::vector(const vector<T>& copy) {
-		size = copy.size;
-		capacity = copy.capacity;
-		arr = new T[capacity];
-		for (sz_type i; i < size; ++i) {
-			arr[i] = copy[i];
+	vector<T>::vector(const sz_type& size, const T& value) {
+		m_size = size;
+		m_capacity = size * CAPACITY_MULTIPLIER;
+		for (sz_type i; i < m_size; ++i) {
+			m_arr[i] = value;
 		}
 	}
 
 	template <typename T>
-	vector::vector(vector<T>&& copy) {
-		size = copy.size;
-		capacity = copy.capacity;
-		arr = new T[capacity];
-		for (sz_type i; i < size; ++i) {
-			arr[i] = std::move(copy[i]);
+	vector<T>::vector(const vector<T>& copy) {
+		m_size = copy.m_size;
+		m_capacity = copy.m_capacity;
+		m_arr = new T[m_capacity];
+		for (sz_type i; i < m_size; ++i) {
+			m_arr[i] = copy[i];
 		}
 	}
 
 	template <typename T>
-	vector::~vector() {
-		delete[] arr;
+	vector<T>::vector(vector<T>&& copy) {
+		m_size = copy.m_size;
+		m_capacity = copy.m_capacity;
+		m_arr = new T[m_capacity];
+		for (sz_type i; i < m_size; ++i) {
+			m_arr[i] = std::move(copy[i]);
+		}
 	}
 
 	template <typename T>
-	vector<T>& vector::operator=(const vector<T>& assign) {
+	vector<T>::~vector() {
+		delete[] m_arr;
+	}
+
+	template <typename T>
+	vector<T>& vector<T>::operator=(const vector<T>& assign) {
 		if (this == &assign) return *this;
 
-		if (size = assign.size) {
-			memcpy(arr, assign.arr, assign.size*sizeof(T));
-			return *this;
-		} else if (size > assign.size) {
-			size = assign.size;
-			capacity = assign.capacity;
+		if (m_size == assign.m_size) {
+			memcpy(m_arr, assign.m_arr, assign.m_size * sizeof(T) );
+        } else {
+			m_size = assign.m_size;
+			m_capacity = assign.m_capacity;
 			realloc();
-			memcpy(arr, assign.arr, size*sizeof(T));
-		} else {
-
-		}
-
+			memcpy(m_arr, assign.m_arr, m_size * sizeof(T));
+        }
+        return *this;
 	}
 
 	template <typename T>
-	vector<T>& vector::operator=(vector<T>&& assign) {
+	vector<T>& vector<T>::operator=(vector<T>&& assign) {
 		if (this == &assign) return *this;
+        
+        m_size = assign.m_size;
+        m_capacity = assign.m_capacity;
+        realloc();
+        for (sz_type i; i < m_size; ++i) {
+            m_arr[i] = std::move(assign.m_arr[i]);
+        }
+	}
+    
+    // insertions
+    template <typename T>
+    void vector<T>::push_back(const T& value) {
+        if (m_size >= m_capacity) {
+            realloc(m_size * 2);
+        }
+        m_arr[m_size] = value;
+        ++m_size;
+    }
+    
+    template <typename T>
+    void vector<T>::push_back(T&& value) {
+        if (m_size >= m_capacity) {
+            realloc(m_size * 2);
+        }
+        m_arr[m_size] = std::move(value);
+        ++m_size;
+    }
 
+    // deletions
+    template <typename T>
+    void vector<T>::clear() {
+        for (sz_type i; i < m_size; ++i) {
+            m_arr[i].~T();
+        }
+        m_size = 0;
+    }
+    
+    // accessors
+    template <typename T>
+    sz_type vector<T>::size() const {
+        return m_size;
+    }
+    
+    template <typename T>
+    sz_type vector<T>::capacity() const {
+        return m_capacity;
+    }
+    
+    template <typename T>
+    T& vector<T>::operator [](const sz_type& index) const {
+        return m_arr[index];
+    }
+    
+    template <typename T>
+    T& vector<T>::front() const {
+        return m_arr[0];
+    }
+    
+    template <typename T>
+    T& vector<T>::back() const {
+        return m_arr[m_size - 1];
+    }
+    
+    template <typename T>
+	void vector<T>::realloc() {
+		T* new_arr = new T[m_capacity];
+		memcpy(new_arr, m_arr, m_size*sizeof(T));
+		delete[] m_arr;
+		m_arr = new_arr;
 	}
 
 	template <typename T>
-	void vector::realloc() {
-		T* new_arr = new T[capacity];
-		memcpy(new_arr, arr, size*sizeof(T));
-		delete[] arr;
-		arr = new_arr;
-	}
-
-	template <typename T>
-	void vector::realloc(const sz_type& new_capacity) {
+	void vector<T>::realloc(const sz_type& new_capacity) {
 		T* new_arr = new T[new_capacity];
-		memcpy(new_arr, arr, size*sizeof(T));
-		delete[] arr;
-		arr = new_arr;
+		memcpy(new_arr, m_arr, m_size*sizeof(T));
+		delete[] m_arr;
+		m_arr = new_arr;
 	}
 }
