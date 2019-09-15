@@ -10,12 +10,6 @@ namespace my {
 	template <typename T>
 	class vector {
 	public:
-		// typedefs
-		typedef T* iterator;
-		typedef const T* const_iterator;
-		typedef std::reverse_iterator<iterator> reverse_iterator;
-		typedef const std::reverse_iterator<iterator> const_reverse_iterator;
-
 		// constructors/destructors and assignment operators
 		vector();
 		vector(const sz_type&);
@@ -41,15 +35,15 @@ namespace my {
 		T& back() const;
 
 		// iterators
-		iterator begin();
-		iterator end();
-		const_iterator cbegin() const;
-		const_iterator cend() const;
+		T* begin();
+		T* end();
+		const T* cbegin() const;
+		const T* cend() const;
 
-		iterator rbegin();
-		iterator rend();
-		const_iterator crbegin() const;
-		const_iterator crend() const;
+		std::reverse_iterator<T*> rbegin();
+		std::reverse_iterator<T*> rend();
+		const std::reverse_iterator<T*> crbegin() const;
+		const std::reverse_iterator<T*> crend() const;
 
 	private:
 		T* m_arr;
@@ -187,6 +181,47 @@ namespace my {
     template <typename T>
     T& vector<T>::back() const {
         return m_arr[m_size - 1];
+    }
+    
+    // iterators
+    template <typename T>
+    T* vector<T>::begin() {
+        return m_arr;
+    }
+    
+    template <typename T>
+    T* vector<T>::end() {
+        return m_arr + m_size;
+    }
+    
+    template <typename T>
+    const T* vector<T>::cbegin() const {
+        return m_arr;
+    }
+    
+    template <typename T>
+    const T* vector<T>::cend() const {
+        return m_arr + m_size;
+    }
+    
+    template <typename T>
+    std::reverse_iterator<T*> vector<T>::rbegin() {
+        return std::reverse_iterator<T*>(m_arr + m_size);
+    }
+    
+    template <typename T>
+    std::reverse_iterator<T*> vector<T>::rend() {
+        return std::reverse_iterator<T*>(m_arr);
+    }
+    
+    template <typename T>
+    const std::reverse_iterator<T*> vector<T>::crbegin() const {
+        return std::reverse_iterator<T*>(m_arr + m_size);
+    }
+    
+    template <typename T>
+    const std::reverse_iterator<T*> vector<T>::crend() const {
+        return std::reverse_iterator<T*>(m_arr);
     }
     
     template <typename T>
