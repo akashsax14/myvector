@@ -1,8 +1,10 @@
 #pragma once
-#define GROWTH_SIZE 1.5
 #define CAPACITY_MULTIPLIER 2
+#define DEBUG_FLAG false
+#define GROWTH_SIZE 2
 
 #include <cstring>
+#include <iostream>
 #include <iterator>
 #include <initializer_list>
 
@@ -87,7 +89,7 @@ namespace my {
 		m_size = size;
 		m_capacity = size * CAPACITY_MULTIPLIER;
 		m_arr = new T[m_capacity];
-		for (sz_type i; i < m_size; ++i) {
+		for (sz_type i = 0; i < m_size; ++i) {
 			m_arr[i] = value;
 		}
 	}
@@ -97,7 +99,7 @@ namespace my {
 		m_size = copy.m_size;
 		m_capacity = copy.m_capacity;
 		m_arr = new T[m_capacity];
-		for (sz_type i; i < m_size; ++i) {
+		for (sz_type i = 0 ; i < m_size; ++i) {
 			m_arr[i] = copy[i];
 		}
 	}
@@ -107,7 +109,7 @@ namespace my {
 		m_size = copy.m_size;
 		m_capacity = copy.m_capacity;
 		m_arr = new T[m_capacity];
-		for (sz_type i; i < m_size; ++i) {
+		for (sz_type i = 0 ; i < m_size; ++i) {
 			m_arr[i] = std::move(copy[i]);
 		}
 	}
@@ -126,6 +128,7 @@ namespace my {
 
 	template <typename T>
 	vector<T>::~vector() {
+		if (DEBUG_FLAG) std::cout << "***deleting***" << std::endl;
 		delete[] m_arr;
 	}
 
@@ -151,7 +154,7 @@ namespace my {
         m_size = assign.m_size;
         m_capacity = assign.m_capacity;
         realloc();
-        for (sz_type i; i < m_size; ++i) {
+        for (sz_type i = 0; i < m_size; ++i) {
             m_arr[i] = std::move(assign.m_arr[i]);
         }
         return *this;
@@ -162,9 +165,11 @@ namespace my {
 		m_size = ilist.size();
 		m_capacity = m_size * CAPACITY_MULTIPLIER;
 		realloc();
-		for (sz_type i = 0; i < m_size; ++i) {
-			m_arr[i] = ilist[i];
+		sz_type i = 0;
+		for (const T& item : ilist) {
+			m_arr[i++] = item;
 		}
+		return *this;
 	}
     
     // insertions
